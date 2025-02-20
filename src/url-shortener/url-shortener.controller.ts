@@ -1,34 +1,43 @@
 import {
-  Body,
   Controller,
   Post,
+  Body,
   Get,
   Query,
   Res,
+  HttpException,
   HttpStatus,
+  UsePipes,
 } from '@nestjs/common';
 import { UrlShortenerService } from './url-shortener.service';
+import { CreateUrlDto, CreateUrlSchema } from './dto/create-url.dto';
+import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 import { Response } from 'express';
 
-@Controller('url-shortener')
+@Controller()
 export class UrlShortenerController {
   constructor(private readonly urlShortenerService: UrlShortenerService) {}
 
   @Post('shorten')
-  shortenUrl(@Body('url') url: string) {
-    const code = this.urlShortenerService.generateShortCode(url);
+  @UsePipes(new ZodValidationPipe(CreateUrlSchema))
+  async shortenUrl(@Body() createUrlDto: CreateUrlDto) {
+    const { longUrl } = createUrlDto;
+    const shortCode =
+      await this.urlShortenerService.createShortenedUrl(longUrl);
     return {
-      shortCode: code,
+      shortCode,
+      // shortUrl: `http://localhost:3000/redirect?code=${shortCode}`,
     };
   }
 
   @Get('redirect')
-  redirectToOriginalUrl(@Query('code') code: string, @Res() res: Response) {
-    try {
-      const originalUrl = this.urlShortenerService.getOriginalUrl(code);
-      return res.redirect(originalUrl);
-    } catch (error) {
-      return res.status(HttpStatus.NOT_FOUND).send({ error: error.message });
+  async redirectUrl(@Query('code') code: string, @Res() res: Response) {
+    const originalUrl = await this.urlShortenerService.getOriginalUrl(code);
+
+    if (!originalUrl) {
+      throw new HttpException('Short URL not found', HttpStatus.NOT_FOUND);
     }
+
+    return res.redirect(originalUrl);
   }
 }
