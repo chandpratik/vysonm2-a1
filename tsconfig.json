@@ -17,5 +17,9 @@
     "noImplicitAny": true,
     "strictBindCallApply": true,
     "noFallthroughCasesInSwitch": true
+  },
+  "exclude": ["node_modules", "dist", "url-shortener.db*", "*.db-journal"],
+  "watchOptions": {
+    "watchFile": "fixedPollingInterval"
   }
 }

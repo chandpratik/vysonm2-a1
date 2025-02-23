@@ -38,6 +38,6 @@ export class UrlShortenerController {
       throw new HttpException('Short URL not found', HttpStatus.NOT_FOUND);
     }
 
-    return res.redirect(originalUrl);
+    res.redirect(HttpStatus.FOUND, originalUrl);
   }
 }
