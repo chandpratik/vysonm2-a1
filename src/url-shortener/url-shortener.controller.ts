@@ -8,11 +8,14 @@ import {
   HttpException,
   HttpStatus,
   UsePipes,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { UrlShortenerService } from './url-shortener.service';
 import { CreateUrlDto, CreateUrlSchema } from './dto/create-url.dto';
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 import { Response } from 'express';
+import { DeleteResult } from 'typeorm';
 
 @Controller()
 export class UrlShortenerController {
@@ -26,8 +29,19 @@ export class UrlShortenerController {
       await this.urlShortenerService.createShortenedUrl(longUrl);
     return {
       shortCode,
-      // shortUrl: `http://localhost:3000/redirect?code=${shortCode}`,
     };
+  }
+
+  @Delete(':shortCode')
+  async deleteUrl(@Param('shortCode') shortCode: string, @Res() res: Response) {
+    const deleteResult: DeleteResult =
+      await this.urlShortenerService.deleteShortenedUrl(shortCode);
+
+    if (deleteResult.affected === 0) {
+      return res.status(404).json({ error: 'Short URL not found' });
+    }
+
+    return res.status(200).json({ message: 'Short URL deleted successfully' });
   }
 
   @Get('redirect')

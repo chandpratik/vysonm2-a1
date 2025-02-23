@@ -1,6 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import * as crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid'; // UUID for fallback
 import { Url } from './url.entity';
@@ -47,6 +47,12 @@ export class UrlShortenerService {
   async getOriginalUrl(shortCode: string): Promise<string | null> {
     const url = await this.urlRepository.findOne({ where: { shortCode } });
     return url ? url.longUrl : null;
+  }
+
+  async deleteShortenedUrl(shortCode: string): Promise<DeleteResult> {
+    return await this.urlRepository.delete({
+      shortCode,
+    });
   }
 
   private async saveUrl(shortCode: string, longUrl: string): Promise<string> {
