@@ -134,4 +134,16 @@ describe('UrlShortenerController Integration', () => {
       message: 'Short URL deleted successfully',
     });
   });
+
+  it('should return 400 when an empty URL is sent', async () => {
+    const emptyUrl = '';
+
+    jest.spyOn(service, 'createShortenedUrl').mockImplementation(() => {
+      throw new HttpException('URL cannot be empty', HttpStatus.BAD_REQUEST);
+    });
+
+    await expect(controller.shortenUrl({ longUrl: emptyUrl })).rejects.toThrow(
+      new HttpException('URL cannot be empty', HttpStatus.BAD_REQUEST),
+    );
+  });
 });
