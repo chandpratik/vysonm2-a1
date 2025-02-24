@@ -46,7 +46,16 @@ export class UrlShortenerService {
 
   async getOriginalUrl(shortCode: string): Promise<string | null> {
     const url = await this.urlRepository.findOne({ where: { shortCode } });
-    return url ? url.longUrl : null;
+
+    if (!url) return null;
+
+    // Increment click count and update last_accessed_at
+    await this.urlRepository.update(
+      { shortCode },
+      { click_count: url.click_count + 1, last_accessed_at: new Date() },
+    );
+
+    return url.longUrl;
   }
 
   async deleteShortenedUrl(shortCode: string): Promise<DeleteResult> {

@@ -15,4 +15,10 @@ export class Url {
 
   @Column({ default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @Column({ default: 0 })
+  click_count: number;
+
+  @Column({ type: 'datetime', nullable: true })
+  last_accessed_at: Date;
 }
